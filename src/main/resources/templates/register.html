@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>회원가입</title>
+</head>
+<body>
+<div>
+    <main>
+        <form th:action="@{/register}" method="post">
+            <h1>회원가입</h1>
+            <div>
+                <div>* 이메일</div>
+                <input type="email" id="email" name="email" placeholder="name@example.com">
+                <label for="email">이메일을 입력해주세요</label>
+            </div>
+            <div>
+                <div>* 비밀번호</div>
+                <input type="password" id="password" name="password" placeholder="Password"
+                       oninput="this.value = this.value.replace(/[^A-Za-z0-9!@#$%^&*()-_=+{};:,<.>/?]/g, '')">
+                <label for="password">비밀번호를 입력해주세요</label>
+            </div>
+            <div>
+                <div>* 비밀번호 확인</div>
+                <input type="password" id="passwordChk" placeholder="PasswordChk"
+                       oninput="this.value = this.value.replace(/[^A-Za-z0-9!@#$%^&*()-_=+{};:,<.>/?]/g, '')">
+                <label for="passwordChk">비밀번호를 확인해주세요</label>
+            </div>
+            <div>
+                <input type="checkbox" value="remember-me" id="flexCheckDefault">
+                <label for="flexCheckDefault"> 이용약관 개인정보 수집 및 이용 선택에 모두 동의합니다. </label>
+            </div>
+            <button type="submit">가입하기</button>
+        </form>
+    </main>
+</div>
+</body>
+</html>

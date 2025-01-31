@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>로그인</title>
+</head>
+
+<body>
+<div>
+  <main>
+    <!-- login -> CoustomLogin 리다이렉트-->
+    <form th:action="@{/login/redirect}" method="post">
+      <div>
+        <input type="email" id="email" name="email" placeholder="name@example.com">
+        <label for="email">이메일을 입력해주세요</label>
+      </div>
+      <div>
+        <input type="password" id="password" name="password" placeholder="Password"
+               oninput="this.value = this.value.replace(/[^A-Za-z0-9!@#$%^&*()-_=+{};:,<.>/?]/g, '')">
+        <label for="password">비밀번호를 입력해주세요</label>
+      </div>
+
+      <div>
+        <input type="checkbox" value="remember-me" id="flexCheckDefault">
+        <label for="flexCheckDefault"> 저장 </label>
+      </div>
+      <button type="submit" style="margin-bottom: 5px">로그인</button>
+      <button type="button" onclick="location.href='/register'">회원 가입</button>
+    </form>
+  </main>
+</div>
+</body>
+</html>
