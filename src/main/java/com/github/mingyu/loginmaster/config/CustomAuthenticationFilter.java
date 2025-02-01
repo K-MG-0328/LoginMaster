@@ -6,23 +6,36 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.context.DelegatingSecurityContextRepository;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 import java.io.IOException;
 
 public class CustomAuthenticationFilter  extends UsernamePasswordAuthenticationFilter {
+    private final SecurityContextRepository securityContextRepository;
 
-    private final AuthenticationManager authenticationManager;
-    private final CustomLoginSuccessHandler successHandler;
+    public CustomAuthenticationFilter(HttpSecurity http) {
+        SecurityContextRepository repository = getSecurityContextRepository(http);
+        this.securityContextRepository = repository;
+        setSecurityContextRepository(repository);
+    }
 
-    public CustomAuthenticationFilter(AuthenticationManager authenticationManager, CustomLoginSuccessHandler successHandler) {
-        this.authenticationManager = authenticationManager;
-        setFilterProcessesUrl("/customLogin"); //customLogin URL로 들어온 요청은 해당 필터에서 처리
-        this.successHandler = successHandler;
+    private SecurityContextRepository getSecurityContextRepository(HttpSecurity http) {
+        SecurityContextRepository securityContextRepository = http.getSharedObject(SecurityContextRepository.class);
+        if (securityContextRepository == null) {
+            securityContextRepository =
+                    new DelegatingSecurityContextRepository(new HttpSessionSecurityContextRepository(), new RequestAttributeSecurityContextRepository());
+        }
+        return securityContextRepository;
     }
 
     @Override
@@ -42,13 +55,27 @@ public class CustomAuthenticationFilter  extends UsernamePasswordAuthenticationF
            - 세션 정보(Session ID)
            - 원격 IP 주소(Remote Address)
            - 기타 인증 관련 요청 정보 */
-        setDetails(request, authRequest);
+        this.setDetails(request, authRequest);
 
-        return authenticationManager.authenticate(authRequest);
+        return this.getAuthenticationManager().authenticate(authRequest);
     }
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        successHandler.onAuthenticationSuccess(request, response, authResult);
+
+        // SecurityContext 생성 및 저장
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authResult);
+
+        //SecurityContextHolder, SecirityContextRepository에 저장
+        SecurityContextHolder.setContext(securityContext);
+        securityContextRepository.saveContext(securityContext, request, response);
+
+        // 세션에 SecurityContext 저장 (인증 영속성 유지)
+        HttpSession session = request.getSession();
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+
+        // 성공 핸들러 실행
+        this.getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
     }
 }

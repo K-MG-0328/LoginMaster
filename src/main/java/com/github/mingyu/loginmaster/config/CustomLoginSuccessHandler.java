@@ -4,7 +4,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
 
@@ -17,13 +16,11 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
 
+        //유저 정보를 가지고 DB에 저장하는 로직 구성
         String username = authentication.getName();
 
         request.getSession().setAttribute("loginUser", username);
         request.getSession().setAttribute("loginTime", System.currentTimeMillis());
-
-        // SecurityContextHolder에 인증 정보 강제 저장
-        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         response.sendRedirect("/home");
     }

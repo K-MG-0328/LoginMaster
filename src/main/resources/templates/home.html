@@ -6,8 +6,7 @@
 </head>
 
 <body>
-<div>
-  home
-</div>
+<h1>Welcome, <span th:text="${session.loginUser}"></span>!</h1>
+<a href="/logout">Logout</a>
 </body>
 </html>
