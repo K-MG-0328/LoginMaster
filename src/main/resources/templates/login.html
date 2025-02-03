@@ -28,6 +28,10 @@
       <button type="button" onclick="location.href='/register'">회원 가입</button>
     </form>
   </main>
+  <div>
+    <a th:href="@{/oauth2/authorization/naver}">네이버 로그인 <br>
+    <a th:href="@{/oauth2/authorization/google}">구글 로그인</a>
+  </div>
 </div>
 </body>
 </html>

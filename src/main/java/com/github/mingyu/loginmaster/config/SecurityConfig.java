@@ -20,6 +20,7 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     private final CustomAuthenticationProvider customAuthenticationProvider;
     private final CustomLoginSuccessHandler customLoginSuccessHandler;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -35,17 +36,23 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login/*", "/logout", "/register", "/customLogin").permitAll()
+                        // OAuth2 로그인 요청 경로 허용
+                        .requestMatchers("/login/oauth2/**", "/oauth2/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
                         .permitAll()
                 )
-                //requireExplicitSave를 false로 하게되면 SecurityContextPersistenceFilter를 타게되고 세션에 자동으로 저장이된다. 스프링 5버전과 동일하게 적용됨.
-                //.securityContext(securityContext -> securityContext.requireExplicitSave(false))
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login") //기본 로그인 페이지 재정의, 해당 설정을 했을 경우 허용되지않은 화면에 대해서는 로그인페이지로 리디렉션.
+                        .successHandler(customOAuth2SuccessHandler)
+                )
                 .logout(logout -> logout
-                        .logoutSuccessUrl("/login")
-                        .permitAll()
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/home")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                 );
         return http.build();
     }
